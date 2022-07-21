@@ -27,6 +27,7 @@ distance_lookup <- read.csv("data/distance_lookup.csv")
 ####### Main Code #################################
 
 results_df <- data.frame(Species = character(),
+                         N = integer(),
                          EDR = double(),
                          EDR_2.5 = double(),
                          EDR_97.5 = double(),
@@ -62,6 +63,7 @@ for (s in species)
     {
       results_df <- rbind(results_df,
                           data.frame(Species = s,
+                                     N = length(indices),
                                      EDR = NA,
                                      EDR_2.5 = NA,
                                      EDR_97.5 = NA,
@@ -73,6 +75,7 @@ for (s in species)
       
       results_df <- rbind(results_df,
                           data.frame(Species = s,
+                                     N = length(indices),
                                      EDR = unname(coef(mod)[1]),
                                      EDR_2.5 = intervals[1],
                                      EDR_97.5 = intervals[2],
