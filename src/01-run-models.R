@@ -42,24 +42,44 @@ for (s in species)
   for (d in unique(design_s$Distance_Method))
   {
     message(paste0("Species: ", s, " Method: ", i, "/", n_designs))
+    method <- distance_lookup[which(distance_lookup$Method == d), "Description"][1]
     indices <- which(design_s$Distance_Method == d)
     
     counts_d <- as.matrix(counts_s[indices, 4:ncol(counts_s)])
     design_d <- as.matrix(design_s[indices, 4:ncol(design_s)])
     
-    mod <- cmulti(counts_d | design_d ~ 1, type = "dis")
+    mod <- tryCatch(
+      {
+        cmulti(counts_d | design_d ~ 1, type = "dis")
+      },
+      error = function(e)
+      {
+        return(NA)
+      }
+    )
     
-    intervals <- quantile(mvrnorm(10000, coef(mod)[1], vcov(mod)),
-                          probs = c(0.025, 0.975))
+    if (is.na(mod))
+    {
+      results_df <- rbind(results_df,
+                          data.frame(Species = s,
+                                     EDR = NA,
+                                     EDR_2.5 = NA,
+                                     EDR_97.5 = NA,
+                                     Method = method))      
+    }else
+    {
+      intervals <- quantile(mvrnorm(10000, coef(mod)[1], vcov(mod)),
+                            probs = c(0.025, 0.975))
+      
+      results_df <- rbind(results_df,
+                          data.frame(Species = s,
+                                     EDR = unname(coef(mod)[1]),
+                                     EDR_2.5 = intervals[1],
+                                     EDR_97.5 = intervals[2],
+                                     Method = method))      
+    }
     
-    method <- distance_lookup[which(distance_lookup$Method == d), "Description"][1]
-    
-    results_df <- rbind(results_df,
-                        data.frame(Species = s,
-                                   EDR = unname(coef(mod)[1]),
-                                   EDR_2.5 = intervals[1],
-                                   EDR_97.5 = intervals[2],
-                                   Method = method))
+
     i <- i + 1
   }
   message(paste0("Species: ", s, " Method: ALL"))
