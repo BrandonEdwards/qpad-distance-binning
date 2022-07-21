@@ -98,6 +98,7 @@ for (s in species)
   
   results_df <- rbind(results_df,
                       data.frame(Species = s,
+                                 N = nrow(counts_full),
                                  EDR = unname(coef(mod)[1]),
                                  EDR_2.5 = intervals[1],
                                  EDR_97.5 = intervals[2],
